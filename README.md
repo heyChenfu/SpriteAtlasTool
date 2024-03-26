@@ -1,2 +1,2 @@
 # SpriteAtlasTool
-纹理图集工具
+ 纹理图集收集工具

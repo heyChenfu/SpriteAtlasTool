@@ -19,20 +19,33 @@ namespace SpriteAtlasTool
 
     public class SpriteAtlasCollectorTreeView : TreeView 
     {
-        public SpriteAtlasCollectorTreeViewItem Root;
         public MultiColumnHeaderState HeaderState;
 
-        public SpriteAtlasCollectorTreeView(TreeViewState state, MultiColumnHeaderState header)
+        private SpriteAtlasCollectorTreeViewItem _root;
+        private SpriteAtlasCollectorWindow _mainWindow;
+
+        public SpriteAtlasCollectorTreeView(TreeViewState state, MultiColumnHeaderState header, SpriteAtlasCollectorWindow mainWindow)
             : base(state, new MultiColumnHeader(header))
         {
             showBorder = true;
             showAlternatingRowBackgrounds = false;
             HeaderState = header;
+            _mainWindow = mainWindow;
         }
 
         protected override TreeViewItem BuildRoot()
         {
-            return Root;
+            _root = new SpriteAtlasCollectorTreeViewItem(0, -1, null);
+            _root.children = new List<TreeViewItem>();
+            _root.displayName = "Root";
+            for (int i = 0; i < SpriteAtlasCollectorSetting.instance.CollectorData.Count; ++i)
+            {
+                var child = new SpriteAtlasCollectorTreeViewItem(i + 1, i, SpriteAtlasCollectorSetting.instance.CollectorData[i]);
+                child.displayName = string.IsNullOrEmpty(child.Data.Name) ? 
+                    $"{SpriteAtlasToolLanguageDef.SpriteAtlas}{i + 1}" : child.Data.Name;
+                _root.AddChild(child);
+            }
+            return _root;
         }
 
         protected override void RowGUI(RowGUIArgs args)
@@ -59,8 +72,7 @@ namespace SpriteAtlasTool
                 Texture2D folderIcon = EditorGUIUtility.FindTexture("Folder Icon");
                 GUI.DrawTexture(iconRect, folderIcon, ScaleMode.ScaleToFit);
                 var nameRect = new Rect(cellRect.x + iconRect.xMax + 2, cellRect.y, cellRect.width - iconRect.width, cellRect.height);
-                string sName = string.IsNullOrEmpty(treeViewItem.Data.Name) ? item.displayName : treeViewItem.Data.Name;
-                DefaultGUI.Label(nameRect, sName, args.selected, args.focused);
+                DefaultGUI.Label(nameRect, item.displayName, args.selected, args.focused);
             }
 
         }
@@ -72,7 +84,7 @@ namespace SpriteAtlasTool
             {
                 headerContent = new GUIContent(SpriteAtlasToolLanguageDef.SpriteAtlas),
                 minWidth = 60,
-                width = 200,
+                width = 300,
                 sortedAscending = true,
                 headerTextAlignment = TextAlignment.Center,
                 canSort = false,
@@ -81,19 +93,6 @@ namespace SpriteAtlasTool
             };
             retVal.Add(fist);
             return new MultiColumnHeaderState(retVal.ToArray());
-        }
-
-        private Texture2D GetIcon(string path)
-        {
-            UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath(path, typeof(UnityEngine.Object));
-            if (obj != null)
-            {
-                Texture2D icon = AssetPreview.GetMiniThumbnail(obj);
-                if (icon == null)
-                    icon = AssetPreview.GetMiniTypeThumbnail(obj.GetType());
-                return icon;
-            }
-            return null;
         }
 
         private void CreateTreeViewItem()
@@ -139,6 +138,7 @@ namespace SpriteAtlasTool
             {
                 // 清除当前的选择
                 SetSelection(new int[] { });
+                _mainWindow.SpriteAtlasCollectorDataSelect(null);
                 return;
             }
 
@@ -165,6 +165,36 @@ namespace SpriteAtlasTool
         }
 
         #endregion
+
+        /// <summary>
+        /// 选择变化回调
+        /// </summary>
+        /// <param name="selectedIds"></param>
+        protected override void SelectionChanged(IList<int> selectedIds)
+        {
+            SpriteAtlasCollectorData selectData = null;
+            foreach (var id in selectedIds)
+            {
+                TreeViewItem item = FindItem(id, rootItem);
+                if (item != null && item is SpriteAtlasCollectorTreeViewItem collectorItem)
+                {
+                    selectData = collectorItem.Data;
+                    break;
+                }
+            }
+            _mainWindow.SpriteAtlasCollectorDataSelect(selectData);
+
+        }
+
+        /// <summary>
+        /// 改名判断回调
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        protected override bool CanRename(TreeViewItem item)
+        {
+            return item.displayName.Length > 0;
+        }
 
         /// <summary>
         /// 重命名回调

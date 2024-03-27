@@ -10,6 +10,7 @@ namespace SpriteAtlasTool
     [CreateAssetMenu(fileName = "SpriteAtlasCollectorSetting", menuName = "SpriteAtlasTool/Create SpriteAtlasCollectorSetting")]
     public class SpriteAtlasCollectorSetting : ScriptableSingleton<SpriteAtlasCollectorSetting>
     {
+        public string SpriteAtlasOutputPath;
         public List<SpriteAtlasCollectorData> CollectorData;
 
         public void Add()

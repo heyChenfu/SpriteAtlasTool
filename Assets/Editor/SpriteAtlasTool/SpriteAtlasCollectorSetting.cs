@@ -19,9 +19,9 @@ namespace SpriteAtlasTool
             CollectorData.Add(new SpriteAtlasCollectorData());
         }
 
-        public void Remove(int index)
+        public void Remove(SpriteAtlasCollectorData data)
         {
-            CollectorData.RemoveAt(index);
+            CollectorData.Remove(data);
         }
 
         public void Save()

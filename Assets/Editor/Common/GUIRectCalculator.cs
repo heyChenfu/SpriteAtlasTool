@@ -18,8 +18,8 @@ namespace SpriteAtlasTool
         public static Rect[] Split(Rect content, float[] splitRatio, bool bHorizental)
         {
             Rect[] rectArr = new Rect[splitRatio.Length];
-            float xOffset = 0;
-            float yOffset = 0;
+            float xOffset = content.x;
+            float yOffset = content.y;
             for (int i = 0; i < splitRatio.Length; ++i)
             {
                 if (bHorizental)

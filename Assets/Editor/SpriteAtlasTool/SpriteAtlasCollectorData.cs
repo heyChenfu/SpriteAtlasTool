@@ -8,6 +8,7 @@ namespace SpriteAtlasTool
     [Serializable]
     public class SpriteAtlasCollectorData
     {
+        public string Name;
         public List<SpriteAtlasCollectorSingleData> SpriteAtlasData = new List<SpriteAtlasCollectorSingleData>();
     }
 

@@ -16,7 +16,7 @@ namespace SpriteAtlasTool
         [MenuItem("SpriteAtlasTool/SpriteAtlasCollectorWindow", false)]
         public static void OpenWindow()
         {
-            SpriteAtlasCollectorWindow window = GetWindow<SpriteAtlasCollectorWindow>("图集收集工具", true);
+            SpriteAtlasCollectorWindow window = GetWindow<SpriteAtlasCollectorWindow>(SpriteAtlasToolLanguageDef.MainWindowName, true);
             window.minSize = new Vector2(400, 400);
         }
 
@@ -24,8 +24,13 @@ namespace SpriteAtlasTool
         {
             EditorGUILayout.BeginVertical();
 
+            float barHeight = EditorStyles.toolbar.fixedHeight;
+            Rect contentRect = new Rect(0, barHeight, position.width, position.height - barHeight);
+            float[] splitArr = new float[] { 0.4f, 0.6f };
+            Rect[] splitRect = GUIRectCalculator.Split(contentRect, splitArr, true);
+
             DrawToolBar();
-            UpdateAssetTree();
+            UpdateAssetTree(splitRect[0]);
 
             EditorGUILayout.EndVertical();
         }
@@ -35,15 +40,15 @@ namespace SpriteAtlasTool
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button("新增图集", EditorStyles.toolbarButton))
+            if (GUILayout.Button(SpriteAtlasToolLanguageDef.AddNewSpriteAtlas, EditorStyles.toolbarButton))
             {
-                Debug.Log("新增配置");
+                Debug.Log(SpriteAtlasToolLanguageDef.AddNewSpriteAtlas);
                 SpriteAtlasCollectorSetting.instance.Add();
             }
 
-            if (GUILayout.Button("保存", EditorStyles.toolbarButton))
+            if (GUILayout.Button(SpriteAtlasToolLanguageDef.SaveData, EditorStyles.toolbarButton))
             {
-                Debug.Log("保存");
+                Debug.Log(SpriteAtlasToolLanguageDef.SaveData);
                 SpriteAtlasCollectorSetting.instance.Save();
             }
 
@@ -51,7 +56,7 @@ namespace SpriteAtlasTool
 
         }
 
-        private void UpdateAssetTree()
+        private void UpdateAssetTree(Rect treeviewRect)
         {
             if (SpriteAtlasCollectorSetting.instance.CollectorData == null || 
                 SpriteAtlasCollectorSetting.instance.CollectorData.Count == 0)
@@ -63,6 +68,7 @@ namespace SpriteAtlasTool
             for (int i = 0; i < SpriteAtlasCollectorSetting.instance.CollectorData.Count; ++i)
             {
                 var child = new SpriteAtlasCollectorTreeViewItem(i + 1, i, SpriteAtlasCollectorSetting.instance.CollectorData[i]);
+                child.displayName = $"{SpriteAtlasToolLanguageDef.SpriteAtlas}{i + 1}";
                 root.AddChild(child);
             }
             if (_atlasTreeView == null)
@@ -75,13 +81,11 @@ namespace SpriteAtlasTool
             }
             _atlasTreeView.Root = root;
             _atlasTreeView.Reload();
-            _atlasTreeView.OnGUI(new Rect(0, EditorStyles.toolbar.fixedHeight, position.width, position.height - EditorStyles.toolbar.fixedHeight));
+            _atlasTreeView.OnGUI(treeviewRect);
+
         }
 
-
-
     }
-
 
 }
 

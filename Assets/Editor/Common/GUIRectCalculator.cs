@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace SpriteAtlasTool
+namespace Editor.Common
 {
 
     public static class GUIRectCalculator

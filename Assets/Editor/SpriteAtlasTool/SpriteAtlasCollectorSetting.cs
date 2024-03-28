@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace SpriteAtlasTool
 {
-    [FilePath("Assets/SpriteAtlasCollectorSetting.asset", FilePathAttribute.Location.ProjectFolder)]
+    [Editor.Common.FilePath("Assets/SpriteAtlasCollectorSetting.asset")]
     [CreateAssetMenu(fileName = "SpriteAtlasCollectorSetting", menuName = "SpriteAtlasTool/Create SpriteAtlasCollectorSetting")]
-    public class SpriteAtlasCollectorSetting : ScriptableSingleton<SpriteAtlasCollectorSetting>
+    public class SpriteAtlasCollectorSetting : Editor.Common.ScriptableSingleton<SpriteAtlasCollectorSetting>
     {
         public string SpriteAtlasOutputPath;
         public List<SpriteAtlasCollectorData> CollectorData;

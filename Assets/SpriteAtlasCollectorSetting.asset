@@ -14,10 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SpriteAtlasOutputPath: Assets\Art\SpriteAtlas
   CollectorData:
-  - Name: "\u56FE\u96C61"
+  - Name: 
     SpriteAtlasData:
     - PathData: {fileID: 102900000, guid: ec01baec2e846bc4caaa1d5c06864f33, type: 3}
-    - PathData: {fileID: 2800000, guid: 20d18e239dbc2e643bc0978c542ec403, type: 3}
-  - Name: "\u56FE\u96C6222"
+    - PathData: {fileID: 2800000, guid: fe26da3e77a4ce74ba7d9a0cb56c2d44, type: 3}
+    - PathData: {fileID: 2800000, guid: 155f838b1782f9b42a35ff1d6bbc4f1d, type: 3}
+    - PathData: {fileID: 2800000, guid: d411279e03aa52c42b5af78dafd8d4ee, type: 3}
+  - Name: 
     SpriteAtlasData:
-    - PathData: {fileID: 102900000, guid: 46f4d5e762a5aed4e9011738ccdb522a, type: 3}
+    - PathData: {fileID: 102900000, guid: 6939a3398b37ce146a9ffa58d6e1a9a5, type: 3}

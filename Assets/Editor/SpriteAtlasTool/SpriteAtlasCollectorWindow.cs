@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using Editor.Common;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -46,20 +48,14 @@ namespace SpriteAtlasTool
         void DrawToolBar()
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            GUILayout.Label(SpriteAtlasToolLanguageDef.Outputpath, GUILayout.MaxWidth(60));
+            GUILayout.Label(SpriteAtlasToolLanguageDef.Outputpath, GUILayout.MaxWidth(80));
             //SpriteAtlasOutputPath
             string newPath = EditorGUILayout.TextField(SpriteAtlasCollectorSetting.instance.SpriteAtlasOutputPath);
-            newPath.TrimEnd('/', '\\');
+            newPath?.TrimEnd('/', '\\');
             if (SpriteAtlasCollectorSetting.instance.SpriteAtlasOutputPath != newPath)
             {
                 if (Directory.Exists(newPath))
-                {
                     SpriteAtlasCollectorSetting.instance.SpriteAtlasOutputPath = newPath;
-                }
-                else
-                {
-                    EditorUtility.DisplayDialog(SpriteAtlasToolLanguageDef.ErrorMsg, SpriteAtlasToolLanguageDef.ErrorPath, "ok");
-                }
             }
 
             GUILayout.FlexibleSpace();
@@ -67,7 +63,10 @@ namespace SpriteAtlasTool
             if (GUILayout.Button(SpriteAtlasToolLanguageDef.BuildSpriteAtlas, EditorStyles.toolbarButton))
             {
                 Debug.Log(SpriteAtlasToolLanguageDef.BuildSpriteAtlas);
-                SetSpriteAtlas();
+                if (!Directory.Exists(SpriteAtlasCollectorSetting.instance.SpriteAtlasOutputPath))
+                    EditorUtility.DisplayDialog(SpriteAtlasToolLanguageDef.ErrorMsg, SpriteAtlasToolLanguageDef.ErrorPath, "ok");
+                else
+                    SetSpriteAtlas();
             }
             if (GUILayout.Button(SpriteAtlasToolLanguageDef.AddNewSpriteAtlas, EditorStyles.toolbarButton))
             {
@@ -122,8 +121,8 @@ namespace SpriteAtlasTool
                 for (int i = 0; i < SelectCollectorData.SpriteAtlasData.Count; ++i)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(string.Format(SpriteAtlasToolLanguageDef.CollectIndex, i + 1), GUILayout.Width(80));
-                    var newObj = EditorGUILayout.ObjectField("", SelectCollectorData.SpriteAtlasData[i].PathData, typeof(Object), false);
+                    GUILayout.Label(string.Format(SpriteAtlasToolLanguageDef.CollectIndex, i + 1), GUILayout.Width(100));
+                    var newObj = EditorGUILayout.ObjectField("", SelectCollectorData.SpriteAtlasData[i].PathData, typeof(UnityEngine.Object), false);
                     if (newObj != SelectCollectorData.SpriteAtlasData[i].PathData)
                     {
                         SelectCollectorData.SpriteAtlasData[i].PathData = newObj;
@@ -168,51 +167,68 @@ namespace SpriteAtlasTool
         {
             EditorUtility.DisplayCancelableProgressBar(SpriteAtlasToolLanguageDef.BeginSetting, "", 1);
 
-            for (int i = 0; SpriteAtlasCollectorSetting.instance.CollectorData != null && 
-                i < SpriteAtlasCollectorSetting.instance.CollectorData.Count; i++)
+            try
             {
-                //生成/获取SpriteAtlas
-                if (!Directory.Exists(SpriteAtlasCollectorSetting.instance.SpriteAtlasOutputPath))
-                    break;
-                string sAtlasPath = Path.Combine(SpriteAtlasCollectorSetting.instance.SpriteAtlasOutputPath,
-                    $"{SpriteAtlasCollectorSetting.instance.CollectorData[i].Name}.spriteatlas");
-                SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(sAtlasPath);
-                if (atlas == null)
-                    atlas = CreateSpriteAtlas(sAtlasPath);
-                List<UnityEngine.Object> packables = new List<UnityEngine.Object>(atlas.GetPackables());
-
-                for (int j = 0; j < SpriteAtlasCollectorSetting.instance.CollectorData[i].SpriteAtlasData.Count; ++j)
+                for (int i = 0; SpriteAtlasCollectorSetting.instance.CollectorData != null &&
+                i < SpriteAtlasCollectorSetting.instance.CollectorData.Count; i++)
                 {
-                    UnityEngine.Object objData = SpriteAtlasCollectorSetting.instance.CollectorData[i].SpriteAtlasData[j].PathData;
-                    string objPath = AssetDatabase.GetAssetPath(objData);
-                    bool isFolder = AssetDatabase.IsValidFolder(objPath);
-                    if (isFolder)
+                    //生成/获取SpriteAtlas
+                    if (!Directory.Exists(SpriteAtlasCollectorSetting.instance.SpriteAtlasOutputPath))
+                        break;
+                    string sAtlasPath = Path.Combine(SpriteAtlasCollectorSetting.instance.SpriteAtlasOutputPath,
+                        $"{SpriteAtlasCollectorSetting.instance.CollectorData[i].Name}.spriteatlas");
+                    SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(sAtlasPath);
+                    if (atlas == null)
+                        atlas = CreateSpriteAtlas(sAtlasPath);
+                    UnityEngine.Object[] packables = atlas.GetPackables();
+                    List<UnityEngine.Object> newPackableList = new List<UnityEngine.Object>();
+
+                    for (int j = 0; j < SpriteAtlasCollectorSetting.instance.CollectorData[i].SpriteAtlasData.Count; ++j)
                     {
-                        string[] filePath = System.IO.Directory.GetFiles(objPath);
-                        if (filePath.Length <= 0)
-                            continue;
-                        //获取目录下所有图片
-                        for (int z = 0; z < filePath.Length; z++)
+                        UnityEngine.Object objData = SpriteAtlasCollectorSetting.instance.CollectorData[i].SpriteAtlasData[j].PathData;
+                        string objPath = AssetDatabase.GetAssetPath(objData);
+                        bool isFolder = AssetDatabase.IsValidFolder(objPath);
+                        if (isFolder)
                         {
-                            filePath[z] = filePath[z].Replace("\\", "/");
-                            AddNewSpriteToAtlas(atlas, filePath[z], packables);
+                            string[] filePath = System.IO.Directory.GetFiles(objPath);
+                            if (filePath.Length <= 0)
+                                continue;
+                            //获取目录下所有图片
+                            for (int z = 0; z < filePath.Length; z++)
+                            {
+                                filePath[z] = filePath[z].Replace("\\", "/");
+                                AddNewSpriteToAtlas(filePath[z], packables, newPackableList);
+                            }
+                        }
+                        else
+                        {
+                            //非文件夹直接添加
+                            AddNewSpriteToAtlas(objPath, packables, newPackableList);
                         }
                     }
-                    else
-                    {
-                        //非文件夹直接添加
-                        AddNewSpriteToAtlas(atlas, objPath, packables);
-                    }
+                    atlas.Add(newPackableList.ToArray());
                 }
 
             }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+            finally
+            {
+                SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget, false);
+                EditorUtility.ClearProgressBar();
+                AssetDatabase.Refresh();
 
-            SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget, false);
-            EditorUtility.ClearProgressBar();
-            AssetDatabase.Refresh();
+            }
 
         }
 
+        /// <summary>
+        /// 创建图集, 对图集进行统一设置
+        /// </summary>
+        /// <param name="atlasPath"></param>
+        /// <returns></returns>
         private static SpriteAtlas CreateSpriteAtlas(string atlasPath)
         {
             SpriteAtlas atlas = new SpriteAtlas();
@@ -244,7 +260,7 @@ namespace SpriteAtlasTool
             atlasAndSetting.name = "Android";
             atlasAndSetting.maxTextureSize = maxSize;
             atlasAndSetting.compressionQuality = qualityLevel;
-            atlasAndSetting.format = TextureImporterFormat.ETC2_RGBA8;
+            atlasAndSetting.format = TextureImporterFormat.ASTC_4x4;
             atlas.SetPlatformSettings(atlasAndSetting);
 
             TextureImporterPlatformSettings atlasiOSSetting = atlas.GetPlatformSettings("iPhone");
@@ -260,13 +276,13 @@ namespace SpriteAtlasTool
             return atlas;
         }
 
-        private static void AddNewSpriteToAtlas(SpriteAtlas atlas, string filePath, List<UnityEngine.Object> packables)
+        private static void AddNewSpriteToAtlas(string filePath, UnityEngine.Object[] packables, List<UnityEngine.Object> newPackableList)
         {
-            Sprite spriteObj = AssetDatabase.LoadAssetAtPath<Sprite>(filePath);
-            if (null == spriteObj)
+            UnityEngine.Object spriteObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(filePath);
+            if (!(spriteObj is Texture2D))
                 return;//过滤其他文件
-            if (!packables.Contains(spriteObj))
-                atlas.Add(new UnityEngine.Object[] { spriteObj });
+            if (Array.Find(packables, x => x == spriteObj) == null)
+                newPackableList.Add(spriteObj);
         }
 
         #endregion

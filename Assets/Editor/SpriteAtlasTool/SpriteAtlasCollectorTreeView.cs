@@ -41,8 +41,9 @@ namespace SpriteAtlasTool
             for (int i = 0; i < SpriteAtlasCollectorSetting.instance.CollectorData.Count; ++i)
             {
                 var child = new SpriteAtlasCollectorTreeViewItem(i + 1, i, SpriteAtlasCollectorSetting.instance.CollectorData[i]);
-                child.displayName = string.IsNullOrEmpty(child.Data.Name) ? 
-                    $"{SpriteAtlasToolLanguageDef.SpriteAtlas}{i + 1}" : child.Data.Name;
+                if (string.IsNullOrEmpty(child.Data.Name))
+                    child.Data.Name = $"{SpriteAtlasToolLanguageDef.SpriteAtlas}{i + 1}";
+                child.displayName = child.Data.Name;
                 _root.AddChild(child);
             }
             return _root;

@@ -17,6 +17,7 @@ namespace SpriteAtlasTool
         SpriteAtlasCollectorAssetsTreeView _atlasAssetsTreeView;
         TreeViewState _atlasTreeViewState;
         TreeViewState _atlasAssetsTreeViewState;
+        Vector2 _collectorsScrollPos;
         public SpriteAtlasCollectorData SelectCollectorData { get; private set; }
 
         [MenuItem("SpriteAtlasTool/SpriteAtlasCollectorWindow", false)]
@@ -118,6 +119,7 @@ namespace SpriteAtlasTool
                 }
                 GUILayout.EndHorizontal();
 
+                _collectorsScrollPos = EditorGUILayout.BeginScrollView(_collectorsScrollPos);
                 for (int i = 0; i < SelectCollectorData.SpriteAtlasData.Count; ++i)
                 {
                     GUILayout.BeginHorizontal();
@@ -134,6 +136,7 @@ namespace SpriteAtlasTool
                     }
                     GUILayout.EndHorizontal();
                 }
+                GUILayout.EndScrollView();
             }
             GUILayout.EndArea();
         }
